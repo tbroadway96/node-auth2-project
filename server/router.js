@@ -1,9 +1,12 @@
 const express = require('express');
 const bcrypt = require('bcrypt');
 const Users = require('./models');
+const jwt = require('jsonwebtoken');
+const restrictions = require('./auth/restrictions');
 
 const router = express.Router();
 
+// CREATE A USER
 router.post('/register', async (req, res) => {
     let { username, password } = req.body;
 
@@ -22,8 +25,21 @@ router.post('/register', async (req, res) => {
     }
 })
 
+// LOGIN
 router.post('/login', async (req, res) => {})
 
-router.get('/users', async (req, res) => {})
+// GET USERS
+router.get('/users', restrictions, async (req, res) => {
+    try {const usersList = await Users.find();
+
+        if (usersList) {
+            res.status(200).json(usersList);
+        } else {
+            res.status(500).json({ message: 'Could not retrieve the users list.' });
+        }
+    } catch(err) {
+        res.status(500).json({ message: 'Something went wrong.' });
+    }
+})
 
 module.exports = router;
