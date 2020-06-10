@@ -3,6 +3,7 @@ const bcrypt = require('bcrypt');
 const Users = require('./models');
 const jwt = require('jsonwebtoken');
 const restrictions = require('./auth/restrictions');
+const secret = require('../config/secrets');
 
 const router = express.Router();
 
@@ -62,7 +63,8 @@ router.post('/login', async (req, res) => {
 
 // GET USERS
 router.get('/users', restrictions, async (req, res) => {
-    try {const usersList = await Users.find();
+    try {
+        const usersList = await Users.find();
 
         if (usersList) {
             res.status(200).json(usersList);
