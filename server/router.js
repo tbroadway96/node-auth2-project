@@ -6,6 +6,18 @@ const restrictions = require('./auth/restrictions');
 
 const router = express.Router();
 
+const createToken = (user) => {
+    const payload = {
+        subject: user.id,
+        username: user.username
+    }
+    const options = {
+        expiresIn: '3m'
+    }
+
+    return jwt.sign(payload, secret.jwtSecret, options)
+}
+
 // CREATE A USER
 router.post('/register', async (req, res) => {
     let { username, password } = req.body;
@@ -26,7 +38,27 @@ router.post('/register', async (req, res) => {
 })
 
 // LOGIN
-router.post('/login', async (req, res) => {})
+router.post('/login', async (req, res) => {
+    let { username, password } = req.body
+
+    if (!username || !password) {
+        res.status(500).json({ message: 'You must provide a username and password.' });
+    }
+
+    try {
+        const user = await Users.findByUsername(username);
+
+        if (user && bcrypt.compareSync(password, user.password)) {
+            const token = createToken(user);
+
+            res.status(200).json({ message: `Welcome, ${username}.`, token});
+        } else {
+            res.status(500).json({ message: 'Username or password is incorrect.' });
+        }
+    } catch (err) {
+        res.status(500).json({ message: 'Something went wrong.' });
+    }
+})
 
 // GET USERS
 router.get('/users', restrictions, async (req, res) => {
@@ -37,7 +69,7 @@ router.get('/users', restrictions, async (req, res) => {
         } else {
             res.status(500).json({ message: 'Could not retrieve the users list.' });
         }
-    } catch(err) {
+    } catch (err) {
         res.status(500).json({ message: 'Something went wrong.' });
     }
 })

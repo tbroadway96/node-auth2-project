@@ -5,7 +5,7 @@ const find = () => {
 }
 
 const findByUsername = (username) => {
-    return db.select('*').from('users-info').where({ username: username });
+    return db.select('*').from('users-info').where({ username: username }).first();
 }
 
 const addUser = (user) => {
